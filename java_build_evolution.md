@@ -1,9 +1,8 @@
 # Java 构建演进史：从手工命令到 Maven，再到 Spring Boot
 
-Java 项目的构建过程经历了从“完全手工”到“自动化工具化”的演进。  
-从最早的 `javac/java/jar` 命令，到 Maven 的生命周期与依赖管理，再到 Spring Boot 的可执行 fat jar，整个流程变得越来越简单、标准化、可复用。
+Java 项目的构建过程经历了从"完全手工"到"自动化工具化"的演进。从最早的 `javac/java/jar` 命令，到 Maven 的生命周期与依赖管理，再到 Spring Boot 的可执行 fat jar，整个流程变得越来越简单、标准化、可复用。
 
-本文将带你回顾这一段发展历程，并解释每个阶段到底发生了什么。
+本文将带你回顾这一段发展历程，深入理解每个阶段的技术细节和演进动因。
 
 ---
 
@@ -77,9 +76,9 @@ java \
 
 ---
 
-### 1.4 打包：jar
+### 1.4 打包成 jar 文件
 
-先写 manifest 文件 `manifest.txt`：
+先创建 manifest 文件 `manifest.txt`：
 
 ```
 Main-Class: com.example.app.Main
@@ -105,7 +104,7 @@ jar cfm dist/app.jar manifest.txt -C bin .
 
 ---
 
-### 1.5 部署：外部依赖（非 fat jar）
+### 1.5 部署方式一：外部依赖（非 fat jar）
 
 部署目录结构：
 
