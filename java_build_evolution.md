@@ -312,29 +312,114 @@ Spring Boot 进一步简化部署：
 
 ---
 
-### 3.1 Spring Boot 的 jar 结构
+### 3.1 Spring Boot 的核心插件
+
+Spring Boot 的可执行 fat jar 并不是 Maven 原生能力，而是通过 `spring-boot-maven-plugin` 实现的。
+
+```xml
+<plugin>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-maven-plugin</artifactId>
+</plugin>
+```
+
+当你执行：
+
+```bash
+mvn package
+```
+
+这个插件会在 **package 阶段**介入，对 Maven 生成的普通 jar 进行二次加工。
+
+---
+
+### 3.2 Spring Boot fat jar 的目录结构
 
 ```
 app.jar
+├── META-INF/
+│   └── MANIFEST.MF
 ├── BOOT-INF/
 │   ├── classes/
 │   │   └── com/example/app/Main.class
 │   └── lib/
 │       ├── log4j.jar
 │       └── mysql.jar
-├── META-INF/
-└── org/springframework/...
+└── org/
+    └── springframework/boot/loader/...
 ```
+
+**说明：**
+
+- `BOOT-INF/classes/`：项目自身的 class 文件
+- `BOOT-INF/lib/`：所有第三方依赖 jar（完整的 jar 文件，不是解压合并）
+- `org/springframework/boot/loader`：Spring Boot 内置启动器代码
 
 ---
 
-### 3.2 Spring Boot 为什么能运行？
+### 3.3 MANIFEST.MF 中的关键配置
 
-因为 `spring-boot-maven-plugin`：
+Spring Boot 会自动生成类似下面的 manifest：
 
-- 在 jar 内加入启动器（Bootstrap）
-- 运行时使用自定义 classloader
-- 扫描 `BOOT-INF/lib` 并加载依赖
+```
+Main-Class: org.springframework.boot.loader.JarLauncher
+Start-Class: com.example.app.Main
+```
+
+- `Main-Class`：真正被 JVM 执行的入口（Spring Boot 引导类）
+- `Start-Class`：你的业务启动类
+
+---
+
+### 3.4 Spring Boot fat jar 的启动流程
+
+当你执行：
+
+```bash
+java -jar app.jar
+```
+
+实际发生的流程是：
+
+1. JVM 读取 `Main-Class`
+2. 启动 `JarLauncher`
+3. 创建自定义 `LaunchedURLClassLoader`
+4. 扫描并加载：
+   - `BOOT-INF/classes/`
+   - `BOOT-INF/lib/*.jar`
+5. 通过反射调用 `Start-Class` 的 `main` 方法
+
+---
+
+### 3.5 为什么 Spring Boot 选择"嵌套 jar"方案
+
+Spring Boot 并没有像 `maven-shade-plugin` 那样把依赖 class 解压合并，而是选择嵌套 jar：
+
+**优点：**
+- 避免 class / 资源文件冲突
+- 保留依赖 jar 的完整结构
+- 更适合大型项目
+
+**缺点：**
+- 启动时 classloader 逻辑更复杂
+- jar 体积仍然较大
+
+---
+
+### 3.6 Spring Boot fat jar vs Maven Shade
+
+| 对比项 | Spring Boot | Shade |
+|------|------------|-------|
+| 依赖形式 | 嵌套 jar | class 合并 |
+| 启动方式 | 自定义 classloader | JVM 默认 |
+| 冲突风险 | 低 | 较高 |
+| 可维护性 | 高 | 一般 |
+
+---
+
+> 可以理解为：
+> **Spring Boot 在 jar 内部实现了一套"自己的类加载机制"**，
+> 从而让一个 jar 文件具备完整应用的运行能力。
 
 ---
 
