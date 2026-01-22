@@ -855,42 +855,6 @@ Spring Boot 并没有像 `maven-shade-plugin` 那样把依赖 class 解压合并
    - 每个 jar 保持独立的命名空间
    - 减少类加载冲突的可能性
 
-**优点：**
-
-| 优点 | 说明 |
-|------|------|
-| 避免文件冲突 | 同名 class/资源文件不会相互覆盖 |
-| 保留依赖结构 | 每个 jar 保持完整，便于调试 |
-| 支持 jar 签名 | 不破坏依赖 jar 的数字签名 |
-| 更适合大型项目 | Spring Boot 应用通常依赖较多 |
-
-**缺点：**
-
-| 缺点 | 说明 |
-|------|------|
-| 启动稍慢 | 需要自定义 ClassLoader 加载嵌套 jar |
-| jar 体积大 | 包含所有依赖，通常几十 MB |
-| 结构复杂 | 需要理解 Spring Boot Loader 机制 |
-
-### 3.6 Spring Boot fat jar vs Maven Shade
-
-| 对比项 | Spring Boot | Maven Shade |
-|--------|-------------|-------------|
-| **依赖形式** | 嵌套 jar（完整 jar 文件） | class 合并（解压平铺） |
-| **启动方式** | 自定义 ClassLoader（JarLauncher） | JVM 默认 ClassLoader |
-| **文件冲突** | 低（jar 独立） | 高（同名文件覆盖） |
-| **jar 体积** | 较大（包含 jar 元数据） | 较大（但略小于 Spring Boot） |
-| **启动速度** | 稍慢（需要加载嵌套 jar） | 稍快（直接加载 class） |
-| **调试难度** | 中等（可追踪到具体 jar） | 较难（class 已合并） |
-| **适用场景** | Spring Boot 应用 | 简单 Java 应用 |
-| **签名支持** | 支持（保留原始签名） | 不支持（签名被破坏） |
-
-**选择建议：**
-
-- **Spring Boot 应用**：使用 `spring-boot-maven-plugin`（默认）
-- **简单 Java 应用**：使用 `maven-shade-plugin`
-- **需要极致性能**：考虑 GraalVM Native Image
-
 > **核心理解：**
 >
 > Spring Boot 在 jar 内部实现了一套"自己的类加载机制"，通过 `JarLauncher` 和 `LaunchedURLClassLoader`，让 JVM 能够加载嵌套在 jar 内部的 jar 文件，从而实现了真正的"单文件部署"。
