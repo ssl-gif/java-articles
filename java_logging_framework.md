@@ -1181,3 +1181,10 @@ Spring Boot 默认使用 Logback，并自动配置了桥接包：
             │
             └─ 否 → SLF4J + Logback（推荐）
 ```
+
+
+
+## 参考文档：
+
+- https://zhuanlan.zhihu.com/p/187472182
+- https://www.slf4j.org/
